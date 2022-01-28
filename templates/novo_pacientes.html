@@ -1,0 +1,147 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% include 'partials/_header_estetica.html' %}
+
+<body id="body-pd">
+    <div class="height-100 bg-light" align="">
+
+        <div class="contact-area section-padding-0-200">
+           <div class="container" style="margin-top:80px">
+               <div class="row">
+                   <div class="col-12">
+                       <div class="section-heading">
+                           <h3>MEUS PACIENTES</h3>
+                       </div>
+                   </div>
+               </div>
+               <div class="row">
+                   <div class="col-12">
+                       <div class="contact-form-area">
+                           <form action="" method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                               <div class="row" style="margin-top:1em">
+                                   <div class="col-12 col-lg-12">
+                                       <label for="nome_paciente"><b>Nome</b></label>
+                                       <input type="text" id="nome_paciente" class="form-control" name="nome_paciente"
+                                              placeholder="Ex: José da Silva" required>
+                                   </div>
+                               </div>
+                                <div class="row" style="margin-top:1em">
+                                  <div class="col-12 col-lg-2">
+                                       <label for="rg"><b>RG</b></label>
+                                       <input type="text" id="rg" class="form-control" name="rg" onkeypress="$(this).mask('00.000.000-0');"
+                                              placeholder="11.222.333-4" required>
+                                  </div>
+                                  <div class="col-12 col-lg-2">
+                                       <label for="cpf"><b>CPF</b></label>
+                                       <input type="text" id="cpf" class="form-control" name="cpf" onkeypress="$(this).mask('000.000.000-00');"
+                                              placeholder="111.222.333-44">
+                                  </div>
+                                  <div class="col-12 col-lg-3">
+                                       <label for="profissao"><b>Profissão</b></label>
+                                       <input type="text" id="profissao" class="form-control" name="profissao"
+                                              placeholder="Engenheiro">
+                                  </div>
+                                   <div class="col-12 col-lg-2">
+                                       <label for="data_nascimento"><b>Data de Nascimento</b></label>
+                                       <input type="text" id="data_nascimento" class="form-control" name="data_nascimento"
+                                              placeholder="29/04/1993" onkeypress="$(this).mask('00/00/0000');">
+                                  </div>
+                                   <div class="col-12 col-lg-2">
+                                       <label for="masculino"><b>Sexo</b></label>
+                                        <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="sexo" value="masculino" id="masculino">
+                                          <label class="form-check-label" for="masculino">
+                                            Masculino
+                                          </label>
+                                        </div>
+                                        <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="sexo" value="feminino" id="feminino" checked>
+                                          <label class="form-check-label" for="feminino">
+                                            Feminino
+                                          </label>
+                                        </div>
+                                   </div>
+                               </div>
+                               <div class="row" style="margin-top:1em">
+                                  <div class="col-12 col-lg-6">
+                                    <label for="email"><b>Email</b></label>
+                                    <input id="email" name="email" type="email" maxlength="50" class="form-control"
+                                           placeholder="josedasilva@gmail.com.br">
+                                  </div>
+                                  <div class="col-12 col-lg-3">
+                                    <label for="contato_1"><b>Contato 1</b></label>
+                                    <input id="contato_1" name="contato_1" type="tel" maxlength="11" class="form-control"
+                                           onkeypress="$(this).mask('00-00000-0000');" placeholder="11-98765-4321">
+                                    <span class="validity"></span>
+                                  </div>
+                                  <div class="col-12 col-lg-3">
+                                    <label for="contato_2"><b>Contato 2</b></label>
+                                    <input id="contato_2" name="contato_2" type="tel" maxlength="11" class="form-control"
+                                           onkeypress="$(this).mask('00-00000-0000');" placeholder="11-98765-4321">
+                                    <span class="validity"></span>
+                                  </div>
+                              </div>
+
+                               <div class="row" style="margin-top:1em">
+                                  <div class="col-12 col-lg-9">
+                                       <label for="endereco"><b>Endereço</b></label>
+                                       <input type="text" id="endereco" class="form-control" name="endereco"
+                                              placeholder="Ex: Avenida Pio XII">
+                                   </div>
+                                    <div class="col-12 col-lg-3">
+                                       <label for="numero_endereco"><b>Número</b></label>
+                                       <input type="number" id="numero_endereco" class="form-control" name="numero_endereco"
+                                              placeholder="99"  maxlength = "10"
+                                       oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);">
+                                   </div>
+                               </div>
+                               <div class="row" style="margin-top:1em">
+                                  <div class="col-12 col-lg-6">
+                                       <label for="cidade"><b>Município</b></label>
+                                       <input type="text" id="cidade" class="form-control" name="cidade"
+                                              placeholder="Ex: Campinas">
+                                   </div>
+                                    <div class="col-12 col-lg-3">
+                                       <label for="estado"><b>Estado</b></label>
+                                       <input type="text" id="estado" class="form-control" name="estado"
+                                              placeholder="SP"  maxlength="2">
+                                   </div>
+                                   <div class="col-12 col-lg-3">
+                                       <label for="cep"><b>CEP</b></label>
+                                       <input type="text" id="cep" class="form-control" name="cep"
+                                              placeholder="00.000-000"  onkeypress="$(this).mask('00.000-000');">
+                                   </div>
+                               </div>
+                               <div class="row" style="text-align:center; margin-top:1em">
+                                   <div>
+                                        <button type="submit" class="btn botao_salvar">
+                                            <div class="salvar_letras">Salvar</div>
+                                        </button>
+                                        <a class="btn botao_voltar" type="button"
+                                                href="{% url 'pacientes' %}">
+                                            <div class="salvar_letras">Voltar</div>
+                                        </a>
+                                   </div>
+                               </div>
+                           </form>
+                          </div>
+                       </div>
+                   </div>
+           </div>
+           </div>
+        </div>
+    </div>
+</body>
+
+{% include 'partials/_footer_estetica.html' %}
+
+<script>
+    $(document).ready(function() {
+        $("#button_2").removeClass("nav_link").addClass("nav_link active");
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.15/jquery.mask.min.js"></script>
+</html>

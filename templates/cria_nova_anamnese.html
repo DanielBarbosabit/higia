@@ -1,0 +1,114 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% include 'partials/_header_estetica.html' %}
+
+<body id="body-pd">
+    <div class="height-100 bg-light" align="">
+
+        <div class="contact-area section-padding-0-200">
+           <div class="container" style="margin-top:80px">
+               <div class="row">
+                   <div class="col-12">
+                       <div class="section-heading">
+                           <h3>NOVO ITEM DA ANAMNESE</h3>
+                       </div>
+                   </div>
+               </div>
+               <div class="row">
+                   <div class="col-12">
+                       <div class="contact-form-area">
+                           <form action="" method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                               <div class="row" style="margin-top:1em">
+                                   <div class="col-12 col-lg-12">
+                                       <label for="descricao_questao_anamnese"><b>Descrição da pergunta principal</b></label>
+                                       <input type="text" id="descricao_questao_anamnese" class="form-control" name="descricao_questao_anamnese"
+                                              placeholder="Ex: Toma algum medicamento?" maxlength="90" required>
+                                   </div>
+                               </div>
+                               <div class="row" style="margin-top:1em">
+                                   <div class="col-12 col-lg-12">
+                                       <label for="sim"><b>Qual o tipo da pergunta principal?</b></label>
+                                        <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="habilita_descricao" value="masculino" id="sim">
+                                          <label class="form-check-label" for="sim">
+                                            Discursiva
+                                          </label>
+                                        </div>
+                                        <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="habilita_descricao" value="nao" id="nao" checked>
+                                          <label class="form-check-label" for="nao">
+                                            Objetiva (Sim/Não)
+                                          </label>
+                                        </div>
+                                   </div>
+                               </div>
+                               <div class="row" style="margin-top:1em">
+                                   <div class="col-12 col-lg-12">
+                                       <label for="sim_sec"><b>A primeira pergunta possui alguma pergunta secundária?</b></label>
+                                        <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="habilita_pergunta_sec" value="sim" id="sim_sec">
+                                          <label class="form-check-label" for="sim_sec">
+                                            Sim
+                                          </label>
+                                        </div>
+                                        <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="habilita_pergunta_sec" value="nao" id="nao_sec" checked>
+                                          <label class="form-check-label" for="nao_sec">
+                                            Não
+                                          </label>
+                                        </div>
+                                   </div>
+                               </div>
+                               <div class="row" id="linha_questao_secundaria" style="margin-top:1em; visibility:hidden">
+                                   <div class="col-12 col-lg-12">
+                                       <label for="descricao_questao_sec_anamnese"><b>Descrição da pergunta secundária</b></label>
+                                       <input type="text" id="descricao_questao_sec_anamnese" class="form-control" name="descricao_questao_sec_anamnese"
+                                              placeholder="Ex: Qual?" maxlength="90">
+                                   </div>
+                               </div>
+                               <div class="row" id="linha_resposta_descritiva_secundaria" style="margin-top:1em; visibility:hidden">
+                                   <div class="col-12 col-lg-12">
+                                       <label for="sim_1"><b>Qual o tipo da pergunta secundária?</b></label>
+                                        <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="habilita_descricao_1" value="masculino" id="sim_1">
+                                          <label class="form-check-label" for="sim_1">
+                                            Discursiva
+                                          </label>
+                                        </div>
+                                        <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="habilita_descricao_1" value="nao" id="nao_1" checked>
+                                          <label class="form-check-label" for="nao_1">
+                                            Objetiva (Sim/Não)
+                                          </label>
+                                        </div>
+                                   </div>
+                               </div>
+                               <div class="row" style="text-align: center; margin-top:1em">
+                                   <div>
+                                        <button type="submit" class="btn botao_salvar">
+                                            <div class="salvar_letras">Salvar</div></button>
+                                   </div>
+                               </div>
+                           </form>
+                          </div>
+                       </div>
+                   </div>
+           </div>
+           </div>
+        </div>
+    </div>
+</body>
+
+{% include 'partials/_footer_estetica.html' %}
+
+<script>
+    $(document).ready(function() {
+        $("#button_4").removeClass("nav_link").addClass("nav_link active");
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.15/jquery.mask.min.js"></script>
+<script src="/static/js/criar_item_anamnese.js"></script>
+</html>

@@ -1,0 +1,1 @@
+Esta pasta é responsável pelas configurações do site em si.

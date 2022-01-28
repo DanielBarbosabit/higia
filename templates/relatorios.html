@@ -1,0 +1,47 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% include 'partials/_header_estetica.html' %}
+
+<body id="body-pd">
+    <div class="height-100 bg-light" align="">
+
+        <div class="contact-area section-padding-0-200">
+           <div class="container" style="margin-top:80px">
+               <div class="row">
+                   <div class="col-12">
+                       <div class="section-heading">
+                           <h3>RELATÓRIOS</h3>
+                       </div>
+                   </div>
+               </div>
+               <div class="container" style="margin-top:40px">
+                    <a type="button" href="{% url 'relatorioporpaciente' %}"
+                       class="btn botao_adicionar"><div class="editar_adicionar">Por paciente</div></a>
+               </div>
+               <div class="row">
+                   <div class="col-12">
+                       <div class="contact-form-area">
+                           <form action="" method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                               <div class="row">
+
+                               </div>
+                           </form>
+                       </div>
+                   </div>
+               </div>
+           </div>
+        </div>
+    </div>
+</body>
+
+{% include 'partials/_footer_estetica.html' %}
+
+<script>
+    $(document).ready(function() {
+        $("#button_3").removeClass("nav_link").addClass("nav_link active");
+    });
+</script>
+</html>

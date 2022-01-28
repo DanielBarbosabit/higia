@@ -1,0 +1,143 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% include 'partials/_header_estetica.html' %}
+
+<body id="body-pd">
+    <div class="height-100 bg-light" align="">
+
+        <div class="contact-area section-padding-0-200">
+           <div class="container" style="margin-top:80px">
+               <div class="row">
+                   <div class="col-12">
+                       <div class="section-heading">
+                           <h3>SEU TEMPLATE DE ANAMNESE</h3>
+                       </div>
+                   </div>
+               </div>
+               <div class="row">
+                   <div class="col-12">
+                       <div class="contact-form-area">
+                           <form action="" method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                               {% for anamnese in tipos_anamnese %}
+                               {% if anamnese.status_anamnese == True %}
+                                    {% if anamnese.resposta_binaria == True %}
+                                       <div class="row" style="margin-top:1em">
+                                           <div class="col-12 col-lg-12">
+                                               <label for="sim_prim">
+                                                   <b>{{ anamnese.descricao_questao_anamnese }}</b>
+                                               </label>
+                                                <div class="form-check form-check-inline" style="margin-left:1em">
+                                                  <input class="form-check-input" type="radio" name={{ anamnese.id }} value="sim"
+                                                         id= {{ "sim_prim" }}{{ anamnese.id }}>
+                                                  <label class="form-check-label" for="sim_prim">
+                                                    Sim
+                                                  </label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                  <input class="form-check-input" type="radio" name={{ anamnese.id }} value="nao"
+                                                         id= {{ "nao_prim"}}{{ anamnese.id }} checked>
+                                                  <label class="form-check-label" for="nao_prim">
+                                                    Não
+                                                  </label>
+                                                </div>
+                                           </div>
+                                       </div>
+                                    {% endif %}
+                                    {% if anamnese.resposta_binaria == False %}
+                                      <div class="row" style="margin-top:1em">
+                                            <div class="col-12 col-lg-12">
+                                                <label for={{ anamnese.id }}>
+                                                   <b>{{ anamnese.descricao_questao_anamnese }}</b>
+                                               </label>
+                                               <input type="text" class="form-control" name={{ anamnese.id }}
+                                                      id={{ "dis_prim" }}{{ anamnese.id }} placeholder="Digite aqui a resposta">
+                                           </div>
+                                       </div>
+                                    {% endif %}
+                                    {% if anamnese.habilita_pergunta_secundaria == True %}
+                                       {% if anamnese.resposta_binaria_secundaria == True %}
+                                           <div class="row" style="margin-top:1em">
+                                               <div class="col-12 col-lg-12">
+                                                   <label for="sim_prim">
+                                                       <b>{{ anamnese.descricao_questao_secundaria }}</b>
+                                                   </label>
+                                                    <div class="form-check form-check-inline" style="margin-left:1em">
+                                                      <input class="form-check-input" type="radio"
+                                                             name={{ anamnese.id }}{{ "sec" }}
+                                                             value="sim" id= {{ "sim_sec" }}{{ anamnese.id }} >
+                                                      <label class="form-check-label" for="sim_sec">
+                                                        Sim
+                                                      </label>
+                                                    </div>
+                                                    <div class="form-check form-check-inline">
+                                                      <input class="form-check-input" type="radio"
+                                                             name={{ anamnese.id }}{{ "sec" }}
+                                                             value="nao" id={{ "nao_sec" }}{{ anamnese.id }}  checked>
+                                                      <label class="form-check-label" for="nao_sec">
+                                                        Não
+                                                      </label>
+                                                    </div>
+                                               </div>
+                                           </div>
+                                        {% endif %}
+                                        {% if anamnese.resposta_binaria_secundaria == False %}
+                                          <div class="row" style="margin-top:1em">
+                                               <div class="col-12 col-lg-12">
+                                                   <label for={{ anamnese.id }}{{ "sec" }}>
+                                                       <b>{{ anamnese.descricao_questao_secundaria }}</b>
+                                                   </label>
+                                                   <input type="text" class="form-control"
+                                                          name={{ anamnese.id }}{{ "sec" }}
+                                                          id={{ "dis_sec" }}{{ anamnese.id }}
+                                                          placeholder="Digite aqui a resposta">
+                                               </div>
+                                           </div>
+                                        {% endif %}
+                                    {% endif %}
+                               {% endif %}
+                               {% endfor %}
+                               {% for nao_guiada in status_anamnese_nao_guiada %}
+                                    {% if nao_guiada.nao_guiada == True %}
+                                      <div class="row" style="margin-top:1em; margin-left:10px; margin-right:10px">
+                                          <label for="anamnese_nao_guiada">
+                                                       <b>Anotações: </b>
+                                          </label>
+                                           <textarea class="form-control"class="form-control"
+                                            id="anamnese_nao_guiada" rows="8" maxlength="2500" name="anamnese_nao_guiada"></textarea>
+                                       </div>
+                                    {% endif %}
+                               {% endfor %}
+                               <div class="row" style="text-align: center; margin-top:1em">
+                                   <div>
+                                        <button type="submit" class="btn botao_salvar">
+                                            <div class="salvar_letras">Salvar</div>
+                                        </button>
+                                        <a class="btn botao_voltar" type="button"
+                                                href="{% url 'anamnese' %}">
+                                            <div class="salvar_letras">Voltar</div>
+                                        </a>
+                                   </div>
+                               </div>
+                           </form>
+                          </div>
+                       </div>
+                   </div>
+           </div>
+           </div>
+        </div>
+    </div>
+</body>
+
+{% include 'partials/_footer_estetica.html' %}
+
+<script>
+    anamneses = {{dados_anamnese|safe}};
+    anamnese_nao_guiada = {{anamnese_nao_guiada|safe}};
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.15/jquery.mask.min.js"></script>
+<script src="/static/js/edita_anamnese_paciente.js"></script>
+</html>

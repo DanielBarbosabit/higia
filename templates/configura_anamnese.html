@@ -1,0 +1,174 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% include 'partials/_header_estetica.html' %}
+
+<body id="body-pd">
+    <div class="height-100 bg-light" align="">
+
+        <div class="contact-area section-padding-0-200">
+           <div class="container" style="margin-top:80px">
+               <div class="row">
+                    <div class="container" style="margin-top:40px">
+                        <a type="button" href="{% url 'criar_item_anamnese' %}"
+                           class="btn botao_adicionar"><div class="editar_adicionar">Adicionar item</div>
+                        </a>
+                        <a type="button" href="{% url 'habilitar_nao_guiada' %}"
+                           class="btn botao_adicionar"><div class="editar_adicionar">Não guiada</div>
+                        </a>
+                    </div>
+               </div>
+               <div class="row">
+                   <div class="col-12">
+                       <div class="contact-form-area">
+                           <form action="" method="post" enctype="multipart/form-data">
+                               {% csrf_token %}
+                               {% for anamnese in tipos_anamnese %}
+                                    {% if anamnese.resposta_binaria == True %}
+                                       <div class="row" style="margin-top:1em">
+                                           <div class="col-12 col-lg-12">
+                                            {% if anamnese.status_anamnese == True %}
+                                              <a class="btn botao-pequeno" id={{ anamnese.id }}{{"btn_edit"}}
+                                                  data-toggle="tooltip" title="Editar"
+                                                    href="/edita_item_anamnese/?id_anamnese={{ anamnese.id }}{{"btn_edit"}}">
+                                                   <img src="/static/img/edit_icon.svg"></a>
+                                               <a class="btn botao-pequeno" id={{ anamnese.id }}{{"btn_delete"}}
+                                                  data-toggle="tooltip"
+                                                  title="Deseja desativar esse item? Ao desativá-lo, não constará mais na anamnese."
+                                                    onclick="deleta_item_anamnese(id)">
+                                                   <img src="/static/img/delete_icon.svg"><a>
+                                            {% endif %}
+                                            {% if anamnese.status_anamnese == False %}
+                                               <a class="btn botao-pequeno" id={{ anamnese.id }}{{"btn_activate"}}
+                                                  data-toggle="tooltip"
+                                                  title="Deseja reativar esse item? Ao ativá-lo, irá constar na anamnese."
+                                                    onclick="ativa_item_anamnese(id)">
+                                                   <img src="/static/img/activate_icon.svg"><a>
+                                            {% endif %}
+                                               <label for="sim_prim">
+                                                   <b>{{ anamnese.descricao_questao_anamnese }}</b>
+                                               </label>
+                                                <div class="form-check form-check-inline" style="margin-left:1em">
+                                                  <input class="form-check-input" type="radio" name={{ anamnese.id }} value="sim" id="sim_prim">
+                                                  <label class="form-check-label" for="sim_prim">
+                                                    Sim
+                                                  </label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                  <input class="form-check-input" type="radio" name={{ anamnese.id }} value="nao" id="nao_prim" checked>
+                                                  <label class="form-check-label" for="nao_prim">
+                                                    Não
+                                                  </label>
+                                                </div>
+                                           </div>
+                                       </div>
+                                    {% endif %}
+                                    {% if anamnese.resposta_binaria == False %}
+                                      <div class="row" style="margin-top:1em">
+                                           <div class="col-12 col-lg-12">
+                                           {% if anamnese.status_anamnese == True %}
+                                              <a class="btn botao-pequeno" id={{ anamnese.id }}{{"btn_edit"}}
+                                                  data-toggle="tooltip" title="Editar"
+                                                    href="/edita_item_anamnese/?id_anamnese={{ anamnese.id }}{{"btn_edit"}}">
+                                                   <img src="/static/img/edit_icon.svg"></a>
+                                               <a class="btn botao-pequeno" id={{ anamnese.id }}{{"btn_delete"}}
+                                                  data-toggle="tooltip"
+                                                  title="Deseja desativar esse item? Ao desativá-lo, não constará mais na anamnese."
+                                                    onclick="deleta_item_anamnese(id)">
+                                                   <img src="/static/img/delete_icon.svg"><a>
+                                           {% endif %}
+                                           {% if anamnese.status_anamnese == False %}
+                                               <a class="btn botao-pequeno" id={{ anamnese.id }}{{"btn_activate"}}
+                                                  data-toggle="tooltip"
+                                                  title="Deseja reativar esse item? Ao ativá-lo, irá constar na anamnese."
+                                                    onclick="ativa_item_anamnese(id)">
+                                                   <img src="/static/img/activate_icon.svg"><a>
+                                            {% endif %}
+                                               <label for={{ anamnese.id }}>
+                                                   <b>{{ anamnese.descricao_questao_anamnese }}</b>
+                                               </label>
+                                               <input type="text" class="form-control" name={{ anamnese.id }}
+                                                      placeholder="Digite aqui a resposta">
+                                           </div>
+                                       </div>
+                                    {% endif %}
+                                    {% if anamnese.habilita_pergunta_secundaria == True %}
+                                       {% if anamnese.resposta_binaria_secundaria == True %}
+                                           <div class="row" style="margin-top:1em">
+                                               <div class="col-12 col-lg-12">
+                                                   <label for="sim_prim">
+                                                       <b>{{ anamnese.descricao_questao_secundaria }}</b>
+                                                   </label>
+                                                    <div class="form-check form-check-inline" style="margin-left:1em">
+                                                      <input class="form-check-input" type="radio"
+                                                             name={{ anamnese.id }}{{ "sec" }}
+                                                             value="sim" id="sim_sec">
+                                                      <label class="form-check-label" for="sim_sec">
+                                                        Sim
+                                                      </label>
+                                                    </div>
+                                                    <div class="form-check form-check-inline">
+                                                      <input class="form-check-input" type="radio"
+                                                             name={{ anamnese.id }}{{ "sec" }}
+                                                             value="nao" id="nao_sec" checked>
+                                                      <label class="form-check-label" for="nao_sec">
+                                                        Não
+                                                      </label>
+                                                    </div>
+                                               </div>
+                                           </div>
+                                        {% endif %}
+                                        {% if anamnese.resposta_binaria_secundaria == False %}
+                                          <div class="row" style="margin-top:1em">
+                                               <div class="col-12 col-lg-12">
+                                                   <label for={{ anamnese.id }}{{ "sec" }}>
+                                                       <b>{{ anamnese.descricao_questao_secundaria }}</b>
+                                                   </label>
+                                                   <input type="text" class="form-control"
+                                                          name={{ anamnese.id }}{{ "sec" }}
+                                                          placeholder="Digite aqui a resposta">
+                                               </div>
+                                           </div>
+                                        {% endif %}
+                                    {% endif %}
+                               {% endfor %}
+                                {% for nao_guiada in anamnese_nao_guiada %}
+                                    {% if nao_guiada.nao_guiada == True %}
+                                      <div class="row" style="margin-top:1em; margin-left:10px; margin-right:10px">
+                                          <label for="anamnese_nao_guiada">
+                                                       <b>Anotações: </b>
+                                          </label>
+                                           <textarea class="form-control"class="form-control"
+                                                     id="anamnese_nao_guiada" rows="8" maxlength="2500" name="anamnese_nao_guiada"></textarea>
+                                       </div>
+                                    {% endif %}
+                               {% endfor %}
+                               <div class="row" style="text-align: center; margin-top:1em">
+                                   <div>
+                                        <a class="btn botao_voltar" type="button"
+                                                href="{% url 'anamnese' %}">
+                                            <div class="salvar_letras">Voltar</div>
+                                        </a>
+                                   </div>
+                               </div>
+                           </form>
+                          </div>
+                       </div>
+                   </div>
+           </div>
+           </div>
+        </div>
+    </div>
+</body>
+
+{% include 'partials/_footer_estetica.html' %}
+
+<script>
+    $(document).ready(function() {
+        $("#button_4").removeClass("nav_link").addClass("nav_link active");
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.15/jquery.mask.min.js"></script>
+<script src="/static/js/configura_anamnese.js"></script>
+</html>

@@ -1,0 +1,120 @@
+.botao_editar {
+    background-color: #008CBA;
+    padding: 10px;
+    font-size: 12px;
+}
+
+.editar_letras {
+    color: white;
+}
+
+.botao_editar:hover {
+    background-color: #005544;;
+
+}
+
+.botao_editar_default {
+    background-color: #000000;
+    padding: 10px;
+    font-size: 12px;
+}
+
+.botao_editar_default:hover {
+    background-color: #005544;;
+
+}
+
+.botao_iniciar {
+    background-color: #000000;
+    padding: 10px;
+    font-size: 12px;
+}
+
+.iniciar_op {
+    color: white;
+}
+
+.botao_iniciar:hover {
+    background-color: #38B84E;
+
+}
+
+.botao_excluir {
+    background-color: #c44322;
+    margin-left: 10px;
+    padding: 10px;
+    font-size: 12px;
+}
+
+.excluir_letras {
+    color: white;
+}
+
+.botao_excluir:hover {
+    background-color: #f94336;
+
+}
+
+.botao_adicionar {
+    background-color: #FFA500;
+    padding: 10px;
+    font-size: 15px;
+}
+
+.editar_adicionar {
+    color: white;
+    font-weight: 600;
+}
+
+.botao_adicionar:hover {
+    background-color: #FC9100;
+
+}
+
+.botao_salvar {
+    background-color: #2E8B57;
+    padding: 10px;
+    font-size: 12px;
+}
+
+.salvar_letras {
+    color: white;
+    font-size: 15px;
+}
+
+.botao_salvar:hover {
+    background-color: #2B6957;
+
+}
+
+.botao_voltar {
+    background-color: #FFA500;
+    padding: 10px;
+    font-size: 12px;
+}
+
+.botao_voltar:hover {
+    background-color: #FC9100;
+
+}
+
+.botao-fechar{
+    background: #ff4322;
+}
+
+.botao-fechar:hover{
+    background: #ff1111;
+}
+
+.botao-abrir{
+    background: #11ee55;
+}
+
+.botao-abrir:hover{
+    background: #1ee55;
+}
+
+.botao-pequeno{
+    padding: 2px 2px;
+    margin-bottom:0.5em
+}

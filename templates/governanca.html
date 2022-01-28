@@ -1,0 +1,123 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% include 'partials/_header_estetica.html' %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+
+<!--    Tabela-->
+    <link rel="stylesheet" href="/static/css/datatables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.css">
+    <link rel="stylesheet" href="/static/css/cadastrarusuarios.css">
+
+<body id="body-pd">
+    <div class="height-100 bg-light" align="">
+        <div class="contact-area section-padding-0-200">
+           <div class="container" style="margin-top:80px">
+               <div class="row">
+                   <div class="col-12">
+                       <div class="section-heading">
+                           <h3>GOVERNANÇA DA PLATAFORMA</h3>
+                       </div>
+                   </div>
+               </div>
+              <div class="container" style="margin-top:40px">
+                    <a type="button" href="{% url 'bancodados' %}"
+                       class="btn botao_adicionar"><div class="editar_adicionar">Query</div></a>
+               </div>
+               <div class="row">
+                   <div class="col-12">
+                       <div class="contact-form-area">
+                           <form action="" method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                               <div class="row">
+<!--                                    <div class="col-12 col-lg-12">-->
+<!--                                       <label for="nome_receita"><b>Nome do cliente</b></label>-->
+<!--                                       <input type="text" id="nome_receita" class="form-control" name="nome_receita" placeholder="Ex. José da Silva" required>-->
+<!--                                   </div>-->
+                                    <div class="container" style="margin-top:20px">
+                                        <table id="table_cadastro_usuario" border="1" class="display" style="width:100%">
+                                            <thead>
+                                                <tr>
+                                                    <th>Usuário</th>
+                                                    <th>Email</th>
+                                                    <th>Contato 1</th>
+                                                    <th>Contato 2</th>
+                                                    <th>Permissão</th>
+                                                    <th>Ação</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+<!--                                   <div class="col-12 text-center">-->
+<!--                                       <button class="btn delicious-btn mt-30" type="submit">Criar sua receita</button>-->
+<!--                                   </div>-->
+                               </div>
+                           </form>
+                       </div>
+                   </div>
+               </div>
+           </div>
+        </div>
+    </div>
+</body>
+
+<form id="form_edicao_usuarios" method="POST" action="{% url 'edita_usuarios' %}">{% csrf_token %}
+    <div class="modal" tabindex="-1" role="dialog" id="modal_edita_usuarios">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar usuário</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="col-sm-12" style="margin-left:-10px">
+                <label for="identificacao_usuario"><b>Usuário</b></label>
+                <textarea id="identificacao_usuario" class="form-control" name="identificacao_usuario" rows="1"></textarea>
+                <input type="hidden" name="id_auth_user" id="id_auth_user">
+            </div>
+            <div class="col-sm-12" style="margin-left:-10px">
+                <label for="contato_1"><b>Contato 1</b></label>
+                <textarea id="contato_1" class="form-control" name="contato_1" rows="1"></textarea>
+            </div>
+            <div class="col-sm-12" style="margin-left:-10px">
+                <label for="contato_2"><b>Contato 2</b></label>
+                <textarea id="contato_2" class="form-control" name="contato_2" rows="1"></textarea>
+            </div>
+            <div class="col-sm-12" style="margin-left:-10px">
+                <label for="permissao_acesso"><b>Permissão de acesso</b></label>
+                <div>
+                    <select name="permissao_acesso" id="permissao_acesso">
+                        <option value="0">Não</option>
+                        <option value="1">Sim</option>
+                    </select>
+                </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn botao-abrir">Salvar</button>
+            <button type="button" class="btn botao-fechar" data-dismiss="modal">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</form>
+
+    {% include 'partials/_footer_estetica.html' %}
+
+    <script src="/static/js/tooplate-scripts.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <script src="/static/js/cadastrarusuarios.js"></script>
+    <script src="/static/js/js/jquery.dataTables.min.js"></script>
+    <script>
+        usuarios = {{usuarios|safe}};
+        console.log(usuarios);
+
+    </script>
+
+</html>

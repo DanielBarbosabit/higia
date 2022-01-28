@@ -1,0 +1,38 @@
+.botao_editar {
+    background-color: #008CBA;
+    padding: 10px;
+    font-size: 10px;
+}
+
+.botao_editar:hover {
+    background-color: #005544;;
+
+}
+
+.botao_excluir {
+    background-color: #c44322;
+    margin-left: 10px;
+    padding: 10px;
+    font-size: 10px
+}
+
+.botao_excluir:hover {
+    background-color: #f94336;
+
+}
+
+.botao-fechar{
+    background: #ff4322;
+}
+
+.botao-fechar:hover{
+    background: #ff1111;
+}
+
+.botao-abrir{
+    background: #11ee55;
+}
+
+.botao-abrir:hover{
+    background: #1ee55;
+}

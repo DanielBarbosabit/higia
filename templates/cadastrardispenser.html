@@ -1,0 +1,170 @@
+
+<!--python manage.py runserver 0.0.0.0:8080-->
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Smart Dispenser</title>
+
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+<!--    CSS do select2-->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600">
+    <!-- https://fonts.google.com/specimen/Open+Sans -->
+    <link rel="stylesheet" href="/static/css/fontawesome.min.css">
+    <!-- https://fontawesome.com/ -->
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <!-- https://getbootstrap.com/ -->
+    <link rel="stylesheet" href="/static/css/tooplate.css">
+<!--    Tabela-->
+    <link rel="stylesheet" href="/static/css/datatables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.css">
+    <link rel="stylesheet" href="/static/css/cadastrardispenser.css">
+<!--    <link rel="stylesheet" href="/static/css/css/bootstrap.min.css">-->
+<!--    <link rel="stylesheet" href="/static/css/css/datatables.min.css">-->
+<!--    <link rel="stylesheet" href="/static/css/css/tooplate.css">-->
+
+
+
+</head>
+
+<body id="reportsPage">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                <div class="col-12">
+                    <nav class="navbar navbar-expand-xl navbar-light bg-light">
+                        <a class="navbar-brand" href="#">
+                            <div>
+                                <img src="/static/img/logo_sem_fundo_dash.png"></img>
+                                <h5>SMART DISPENSER</h5>
+                             </div>
+                        </a>
+                        <button class="navbar-toggler ml-auto mr-0" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+
+                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                            <ul class="navbar-nav mx-auto">
+                                    <li class="nav-item">
+                                            <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+                                    </li>
+                                    <li class="nav-item">
+                                            <a class="nav-link" href="{% url 'historico' %}">Histórico</a>
+                                    </li>
+                                {% if request.user.is_superuser %}
+                                    <li class="nav-item">
+                                            <a class="nav-link" href="{% url 'cadastrardispenser' %}">Cadastrar Dispenser</a>
+                                    </li>
+                                   <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'cadastro_usuarios' %}">Usuários</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'visao_logs' %}">Logs</a>
+                                    </li>
+                                {% endif %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'logout' %}">Sair</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+                <div class="container" style="margin-top:40px">
+                    <a type="button" href="{% url 'adddispenser' %}"
+                       class="btn btn-primary">Adicionar</a>
+                </div>
+                <div class="container" style="margin-top:20px">
+                    <table id="table_cadastro_dispenser" border="1" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Dispenser</th>
+                                <th>Usuário</th>
+                                <th>Localização</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="container" style="margin-top:300px">
+                    <footer class="row tm-mt-small">
+                        <div class="col-12 font-weight-light">
+                            <p class="d-inline-block tm-bg-black text-white py-2 px-4">
+                                Copyright &copy; 2020 Sistema de Gerenciamento de Dispenser . Created by Smart Dispenser
+                                <a rel="nofollow" href="https://www.tooplate.com" class="text-white tm-footer-link"></a>
+                            </p>
+                        </div>
+                    </footer>
+                </div>
+            </div>
+        </div>
+</body>
+
+<form id="form_edicao_dispenser" method="POST" action="{% url 'edita_disperser' %}">{% csrf_token %}
+    <div class="modal" tabindex="-1" role="dialog" id="modal_edita_dispenser">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar Dispenser</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row" style="margin-left:5px">
+                <h8 name="identificao_dispenser" id="identificao_dispenser"></h8>
+                <input type="hidden" name="id_dispenser" id="id_disperser"></input>
+            </div>
+            <div class="row" style="margin-top:15px;margin-left:5px">
+                <select name="email_usuario" id="email_usuario"></select>
+            </div>
+            <div class="row" style="margin-top:15px;margin-left:5px">Localização:
+                <textarea rows="3" class="form-control" name="localizacao_dispenser" id="localizacao_dispenser"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn botao-abrir">Salvar</button>
+            <button type="button" class="btn botao-fechar" data-dismiss="modal">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</form>
+
+    <script src="/static/js/jquery-3.3.1.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+<!--    <script type="text/javascript" src="/static/js/datatables.min.js"></script>-->
+    <script type='text/javascript' src='https://code.jquery.com/jquery-1.7.2.min.js'></script>
+    <script src="/static/js/moment.min.js"></script>
+    <script src="/static/js/tooplate-scripts.js"></script>
+    <script src="/static/js/datatables.min.js"
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.js"></script>
+    <script src="/static/js/jquery-3.3.1.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script type='text/javascript' src='https://code.jquery.com/jquery-1.7.2.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <script src="/static/js/cadastrardispenser.js"></script>
+
+<!--    <script src="/static/js/js/dataTables.bootstrap.min.js"></script>-->
+<!--    <script src="/static/js/js/dataTables.bootstrap4.min.js"></script>-->
+<!--    <script src="/static/js/js/dataTables.foundation.min.js"></script>-->
+<!--    <script src="/static/js/js/dataTables.jqueryui.min.js"></script>-->
+<!--    <script src="/static/js/js/dataTables.semanticui.min.js"></script>-->
+    <script src="/static/js/js/jquery.dataTables.min.js"></script>
+    <script>
+        dados = {{dados|safe}};
+        usuarios = {{usuarios|safe}}
+    </script>
+
+</html>
+
