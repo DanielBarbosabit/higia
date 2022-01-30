@@ -19,10 +19,19 @@
                        </div>
                    </div>
                </div>
-               <div class="container" style="margin-top:40px">
-                    <a type="button" href="{% url 'adicionar_paciente' %}"
-                       class="btn botao_adicionar"><div class="editar_adicionar">Adicionar</div></a>
-                </div>
+               <div class="row">
+                   <div class="container" style="margin-top:40px">
+                        <a type="button" href="{% url 'adicionar_paciente' %}"
+                           class="btn botao_adicionar"><div class="editar_adicionar">Adicionar</div>
+                        </a>
+                    </div>
+                   <div class="container" style="margin-top:40px">
+                       <div class="alert alert-danger" role="alert" id="error_atendimento" style="display:None">
+                            Verificamos que você não possui pacientes cadastrados ainda.
+                           Antes de iniciar o atendimento, <b>clique no botão "Adicionar" acima</b> para cadastrar os pacientes.
+                       </div>
+                   </div>
+               </div>
                <div class="row">
                    <div class="col-12">
                        <div class="contact-form-area">
@@ -53,6 +62,33 @@
     </div>
 </body>
 
+
+<div class="modal" tabindex="-1" role="dialog" id="modal_edita_usuarios">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Exclusão de dados do paciente</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p>Deseja mesmo excluir os dados desse paciente? Caso opção escolhida seja <b>"sim"</b>, os dados pessoais, informações
+          de anamnese e dados dos atendimentos desse paciente serão apagados.
+          </p>
+          <input id="paciente_excluido" value="" hidden>
+      </div>
+      <div class="modal-footer" >
+        <button type="submit" class="btn botao_excluir"
+                style="margin-right:auto; margin-left:auto; font-size:14px" onclick="exclui_usuario(id)">
+            <div class="excluir_letras">Sim</div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
     {% include 'partials/_footer_estetica.html' %}
 
     <script src="/static/js/tooplate-scripts.js"></script>
@@ -62,6 +98,7 @@
     <script src="/static/js/js/jquery.dataTables.min.js"></script>
     <script>
         usuarios = {{pacientes|safe}};
+        error_atendimento = {{error_atendimento|safe}};
     </script>
 
 </html>

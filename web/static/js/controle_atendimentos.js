@@ -2,6 +2,7 @@ $(document).ready(function() {
     $("#button_1").removeClass("nav_link").addClass("nav_link active");
 
     var tabela = [];
+
     carrega_dados(tabela);
 
     $('#table_atendimentos').DataTable({

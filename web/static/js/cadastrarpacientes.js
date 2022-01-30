@@ -3,6 +3,7 @@ $(document).ready(function() {
 
     var tabela = [];
     carrega_dados(tabela);
+    mensagem_atendimentos(error_atendimento);
 
     $('#table_cadastro_usuario').DataTable({
         paging: true,
@@ -22,6 +23,14 @@ $(document).ready(function() {
 
 });
 
+function mensagem_atendimentos(error_atendimento){
+    if (error_atendimento == true){
+        $("#error_atendimento").show();
+    }else{
+        $("#error_atendimento").hide();
+    }
+}
+
 function carrega_dados(tabela){
 
     var dict_linhas = {};
@@ -36,7 +45,8 @@ function carrega_dados(tabela){
                                     '" class="btn botao_editar" href="/editar_paciente/?id='+
                                        usuarios[k][0] + '"' + '><div class="editar_letras">Editar</div></a>' +
                                 '<a id="exclui_' + usuarios[k][0] +
-                               '" class="btn botao_excluir" onclick="exclui_usuario(id)"><div class="excluir_letras">Excluir</div></a>' +
+//                               '" class="btn botao_excluir" onclick="exclui_usuario(id)"><div class="excluir_letras">Excluir</div></a>' +
+                               '" class="btn botao_excluir" data-toggle="modal" data-target="#modal_edita_usuarios" onclick="carrega_exclusao(id)"><div class="excluir_letras">Excluir</div></a>' +
                              '</div>';
         tabela.push(dict_linhas);
 
@@ -44,11 +54,16 @@ function carrega_dados(tabela){
     });
 }
 
+function carrega_exclusao(id){
+    $("#paciente_excluido").val(id);
+}
 
-function exclui_usuario(id){
+function exclui_usuario(){
+    id_paciente = $("#paciente_excluido").val();
+
     $.ajax({
         url: "/deleta_paciente/",
-        data: {'id_paciente': id},
+        data: {'id_paciente': id_paciente},
         success: function(){
             location.reload();
         }

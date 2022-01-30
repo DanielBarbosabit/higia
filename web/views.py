@@ -143,23 +143,33 @@ def pacientes(request):
 
         # carrega clientes da plataforma
         id_cliente_fk = busca_id_cliente(request)
-        pacientes = Pacientes.objects.filter(id_cliente_fk = id_cliente_fk)
+        pacientes_list = busca_pacientes(id_cliente_fk)
 
+        error_atendimento = json.dumps(False)
+
+        return render(request, 'pacientes.html', {'pacientes': pacientes_list,
+                                                  'error_atendimento': error_atendimento})
+
+
+def busca_pacientes(id_cliente_fk):
+    pacientes = Pacientes.objects.filter(id_cliente_fk=id_cliente_fk)
+
+    paciente_list = []
+    pacientes_list = []
+
+    for paciente in pacientes:
+        paciente_list.append(paciente.id)
+        paciente_list.append(paciente.nome)
+        paciente_list.append(paciente.email)
+        paciente_list.append(paciente.contato_1)
+
+        pacientes_list.append(paciente_list)
         paciente_list = []
-        pacientes_list = []
 
-        for paciente in pacientes:
-            paciente_list.append(paciente.id)
-            paciente_list.append(paciente.nome)
-            paciente_list.append(paciente.email)
-            paciente_list.append(paciente.contato_1)
+    pacientes_list = json.dumps(pacientes_list)
 
-            pacientes_list.append(paciente_list)
-            paciente_list = []
+    return pacientes_list
 
-        pacientes_list = json.dumps(pacientes_list)
-
-        return render(request, 'pacientes.html', {'pacientes': pacientes_list})
 
 def busca_id_cliente(request):
     """
@@ -434,6 +444,14 @@ def deleta_paciente(request):
         paciente = Pacientes.objects.get(id=id)
         paciente.delete()
 
+        # Deleta os atendimentos do paciente
+        atendimentos_paciente = Fact_atendimentos_procedimentos.objects.filter(id_paciente=id)
+        atendimentos_paciente.delete()
+
+        # Deleta ficha anamnese paciente
+        anamnese_paciente = Perfil_saude_pacientes.objects.filter(id_paciente=id)
+        anamnese_paciente.delete()
+
         return redirect('pacientes')
     else:
         return redirect('dashboard')
@@ -630,9 +648,12 @@ def editar_anamnese_paciente(request):
 
             anamnese_paciente = json.dumps(anamnese_paciente_list)
             # verifica o status da anamnese não guiada para enviar os dados desse campo
-            if list(anamnese_nao_guiada.values())[0]['nao_guiada']:
-                anamnese_nao_guiada_paciente = anamnese_nao_guiada_paciente
-            else:
+            try:
+                if list(anamnese_nao_guiada.values())[0]['nao_guiada']:
+                    anamnese_nao_guiada_paciente = anamnese_nao_guiada_paciente
+                else:
+                    anamnese_nao_guiada_paciente = json.dumps([])
+            except:
                 anamnese_nao_guiada_paciente = json.dumps([])
 
             dados = {
@@ -720,10 +741,12 @@ def habilitar_nao_guiada(request):
         nao_guiada.data_modificacao = data_modificacao
         if pergunta_nao_guiada:
             nao_guiada.nao_guiada = 0
-            nao_guiada.save(update_fields=['nao_guiada', 'data_modificacao'])
+            nao_guiada.status_anamnese = 0
+            nao_guiada.save(update_fields=['nao_guiada', 'data_modificacao', 'status_anamnese'])
         else:
             nao_guiada.nao_guiada = 1
-            nao_guiada.save(update_fields=['nao_guiada', 'data_modificacao'])
+            nao_guiada.status_anamnese = 1
+            nao_guiada.save(update_fields=['nao_guiada', 'data_modificacao', 'status_anamnese'])
     else:
         #Cria item da anamnese para pergunta não guiada
         descricao_questao_anamnese = 'anamnese_nao_guiada'
@@ -883,64 +906,133 @@ def edita_item_anamnese(request):
 def anamnese(request):
     if request.user.is_active:
         id_cliente_fk = busca_id_cliente(request)
+        lista_status_anamneses = carrega_dados_anamnese(id_cliente_fk)
 
-        pacientes = Pacientes.objects.filter(id_cliente_fk=id_cliente_fk).values('id', 'nome')
-        lista_ids_pacientes = []
-        for paciente in pacientes:
-            lista_ids_pacientes.append(str(paciente['id']))
+        error_atendimento = json.dumps(False)
 
-        if len(lista_ids_pacientes) > 0:
-            # Busca anamneses dos pacientes
-            query = connection.cursor()
-            lista = ["'" + str(i) + "'" for i in lista_ids_pacientes]
+        return render(request, 'anamnese.html', {'status_anamneses': lista_status_anamneses,
+                                                 'error_atendimento': error_atendimento})
 
-            query_str = """
-                 select
-                     id, id_paciente, id_anamnese_tipo
-                 from
-                     web_perfil_saude_pacientes
-                 where 
-                    id_cliente_fk = '{}'
-                    and
-                    id_paciente in ({})
-                    
-             """.format(str(id_cliente_fk), ','.join(lista))
 
-            query.execute(query_str)
-            anamneses_pacientes = query.fetchall()
-            query.close()
+def carrega_dados_anamnese(id_cliente_fk):
 
-            # verifica os pacientes que possuem a anamnese preenchida parcialmente ou totalmente
+
+    pacientes = Pacientes.objects.filter(id_cliente_fk=id_cliente_fk).values('id', 'nome')
+    lista_ids_pacientes = []
+    for paciente in pacientes:
+        lista_ids_pacientes.append(str(paciente['id']))
+
+    if len(lista_ids_pacientes) > 0:
+        # Busca anamneses dos pacientes
+        query = connection.cursor()
+        lista = ["'" + str(i) + "'" for i in lista_ids_pacientes]
+
+        query_str = """
+             select
+                 id, id_paciente, id_anamnese_tipo
+             from
+                 web_perfil_saude_pacientes
+             where 
+                id_cliente_fk = '{}'
+                and
+                id_paciente in ({})
+
+         """.format(str(id_cliente_fk), ','.join(lista))
+
+        query.execute(query_str)
+        anamneses_pacientes = query.fetchall()
+        query.close()
+
+        # verifica os pacientes que possuem a anamnese preenchida parcialmente ou totalmente
+        dict_status_anamneses = {}
+        lista_status_anamneses = []
+        for id_paciente in lista_ids_pacientes:
+            dict_status_anamneses['id_paciente'] = id_paciente
+            nome = pacientes.filter(id=int(id_paciente)).values('nome')[0]
+            dict_status_anamneses['nome'] = nome['nome']
+            for registro in anamneses_pacientes:
+                id_paciente_tabela_anamnese = registro[1]
+                if id_paciente_tabela_anamnese == id_paciente:
+                    dict_status_anamneses['status_anamnese'] = 'completo'
+                    break
+                else:
+                    dict_status_anamneses['status_anamnese'] = 'incompleto'
+
+            lista_status_anamneses.append(dict_status_anamneses)
             dict_status_anamneses = {}
-            lista_status_anamneses = []
-            for id_paciente in lista_ids_pacientes:
-                dict_status_anamneses['id_paciente'] = id_paciente
-                nome = pacientes.filter(id=int(id_paciente)).values('nome')[0]
-                dict_status_anamneses['nome'] = nome['nome']
-                for registro in anamneses_pacientes:
-                    id_paciente_tabela_anamnese = registro[1]
-                    if id_paciente_tabela_anamnese == id_paciente:
-                        dict_status_anamneses['status_anamnese'] = 'completo'
-                        break
-                    else:
-                        dict_status_anamneses['status_anamnese'] = 'incompleto'
 
-                lista_status_anamneses.append(dict_status_anamneses)
-                dict_status_anamneses = {}
+        lista_status_anamneses = json.dumps(lista_status_anamneses)
 
-            lista_status_anamneses = json.dumps(lista_status_anamneses)
+    else:
+        lista_status_anamneses = []
 
-            return render(request, 'anamnese.html', {'status_anamneses': lista_status_anamneses})
+    return lista_status_anamneses
 
-        else:
 
-            return render(request, 'anamnese.html', {'status_anamneses': []})
+
+def verifica_registros_pac_anam_proc(id_cliente_fk,
+                                     tabelas_verificadas=['Pacientes',
+                                                          'Anamnese_tipos',
+                                                          'Procedimentos_individuais']):
+
+    dict_verificacoes = {}
+    for tabela in tabelas_verificadas:
+        if tabela == 'Pacientes':
+            if len(list(Pacientes.objects.filter(id_cliente_fk=id_cliente_fk).values())) > 0:
+                dict_verificacoes['Pacientes'] = True
+            else:
+                dict_verificacoes['Pacientes'] = False
+
+        if tabela == 'Anamnese_tipos':
+            if len(list(Anamnese_tipos.objects.filter(id_cliente_fk=id_cliente_fk).\
+                                filter(status_anamnese=1).values())) > 0:
+                dict_verificacoes['Anamnese_tipos'] = True
+            else:
+                dict_verificacoes['Anamnese_tipos'] = False
+
+        if tabela == 'Procedimentos_individuais':
+            if len(list(Procedimentos_individuais.objects.filter(id_cliente_fk=id_cliente_fk).values())) > 0:
+                dict_verificacoes['Procedimentos_individuais'] = True
+            else:
+                dict_verificacoes['Procedimentos_individuais'] = False
+
+    return dict_verificacoes
 
 
 @login_required(login_url='login')
 def atendimentos(request):
     if request.user.is_active:
         id_cliente_fk = busca_id_cliente(request)
+
+        #Chama função para verificar se o usuário já possui pacientes, anamnese e procedimentos registrados
+        dict_verificacoes = verifica_registros_pac_anam_proc(id_cliente_fk)
+        if not dict_verificacoes.get('Pacientes'):
+            pacientes_list = busca_pacientes(id_cliente_fk)
+
+            error_atendimento = json.dumps(True)
+
+            return render(request, 'pacientes.html', {'pacientes': pacientes_list,
+                                                      'error_atendimento': error_atendimento})
+
+        # Verifica se o usuário já criou sua ficha de anamnese
+        if not dict_verificacoes.get('Anamnese_tipos'):
+            lista_status_anamneses = carrega_dados_anamnese(id_cliente_fk)
+
+            error_atendimento = json.dumps(True)
+
+            return render(request, 'anamnese.html', {'status_anamneses': lista_status_anamneses,
+                                                     'error_atendimento': error_atendimento})
+
+        # Verifica se o usuário já criou seus procedimentos
+        if not dict_verificacoes.get('Procedimentos_individuais'):
+            procedimentos_list = carrega_procedimentos(id_cliente_fk)
+            error_atendimento = json.dumps(True)
+
+            return render(request, 'procedimentos.html',
+                          {'procedimentos': procedimentos_list,
+                           'error_atendimento': error_atendimento})
+
+
         atendimentos = list(Fact_atendimentos_procedimentos.objects.filter(id_cliente_fk = id_cliente_fk).values())
 
         campos_atendimentos = ['id', 'id_paciente',
@@ -1314,19 +1406,25 @@ def exporta_relatorio(paciente, id_cliente_fk):
     # A cada extração de relatórios é recriada uma pasta com o id do usuário da plataforma e inseridos
     # os relatórios nessa pasta
     #todo: toda vez que o usuário logar ou deslogar, realizar a exclusão desse diretório
-    fileDir = os.path.dirname(os.path.realpath('__file__')) + "\\relatorios\\" + str(id_cliente_fk) + "\\"
+    # fileDir = os.path.dirname(os.path.realpath('__file__')) + "\\relatorios\\" + str(id_cliente_fk) + "\\"
+    #
+    # if os.path.exists(fileDir):
+    #     shutil.rmtree(fileDir)
+    # os.makedirs(fileDir)
+    #
+    # #Gera o arquivo
+    # with open(fileDir + filename, "wb") as out_file_handle:
+    #     PDF.dumps(out_file_handle, pdf)
+    #
+    #
+    # return FileResponse(open(fileDir + filename, 'rb'), as_attachment=True, content_type='application/pdf')
+    filename = 'relatorio_' + str(id_cliente_fk) + ".pdf"
 
-    if os.path.exists(fileDir):
-        shutil.rmtree(fileDir)
-    os.makedirs(fileDir)
-
-    #Gera o arquivo
-    with open(fileDir + filename, "wb") as out_file_handle:
+    with open(filename, "wb") as out_file_handle:
         PDF.dumps(out_file_handle, pdf)
 
 
-    return FileResponse(open(fileDir + filename, 'rb'), as_attachment=True, content_type='application/pdf')
-
+    return FileResponse(open(filename, 'rb'), as_attachment=True, content_type='application/pdf')
 
 def cria_pdf(append_new_page=False,  pdf_object=None):
     if not append_new_page:
@@ -1422,44 +1520,105 @@ def info_pessoal_paciente_pdf(layout, paciente):
 
 def info_anamnese_paciente_pdf(layout, paciente, id_cliente_fk):
 
-    anamnese_paciente = Perfil_saude_pacientes.objects.filter(id_paciente=paciente.id)
-    total_itens = len(anamnese_paciente)
-
     # Let's start by adding a heading
     layout.add(Paragraph("Anamnese:", font="Helvetica-Bold"))
 
-    # Configura o total de linhas sendo igual o total de itens da Anamnese
-    table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=total_itens, number_of_columns=2)
+    # try:
+    anamnese_paciente = Perfil_saude_pacientes.objects.filter(id_paciente=paciente.id)
+    total_itens = len(anamnese_paciente)
+
+    #Verifica se a não guiada está ativa para o usuário para descontar uma linha da tabela
+    qtde_nao_guiada = list(Anamnese_tipos.objects.filter(id_cliente_fk=id_cliente_fk).filter(nao_guiada=1).values())
+
+    if len(qtde_nao_guiada) > 0:
+        # Configura o total de linhas sendo igual o total de itens da Anamnese
+        if total_itens > 0:
+            table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=total_itens-1, number_of_columns=2)
+        else:
+            layout.add(Paragraph("Anamnese não realizada.", font="Helvetica-Bold"))
+            return
+    else:
+        if total_itens > 0:
+            table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=total_itens, number_of_columns=2)
+        else:
+            layout.add(Paragraph("Anamnese não realizada.", font="Helvetica-Bold"))
+            return
 
     # Coleta os nomes mais atuais das perguntas da Anamnese através do ID
     for item in anamnese_paciente:
         anamnese = Anamnese_tipos.objects.filter(id_cliente_fk=id_cliente_fk).get(id=item.id_anamnese_tipo)
         descricao_sec_anamnese_escolhida = anamnese.habilita_pergunta_secundaria
+        nao_guiada = anamnese.nao_guiada
 
-        #Questão primária
-        if item.descricao_resposta_anamnese == 'sim':
-            table.add(Paragraph(anamnese.descricao_questao_anamnese + " " + 'Sim', font="Helvetica-Bold"))
-        elif item.descricao_resposta_anamnese == 'nao':
-            table.add(Paragraph(anamnese.descricao_questao_anamnese + " " + 'Não', font="Helvetica-Bold"))
-        else:
-            table.add(Paragraph(anamnese.descricao_questao_anamnese + " " + item.descricao_resposta_anamnese, font="Helvetica-Bold"))
-
-        if descricao_sec_anamnese_escolhida == 1:
-            #Questão secundária
-            if item.descricao_resposta_secundaria_anamnese == 'sim':
-                table.add(Paragraph(anamnese.descricao_questao_secundaria + " " + 'Sim', font="Helvetica-Bold"))
-            elif item.descricao_resposta_secundaria_anamnese == 'nao':
-                table.add(Paragraph(anamnese.descricao_questao_secundaria + " " + 'Não', font="Helvetica-Bold"))
+        if not nao_guiada:
+            #Questão primária
+            if item.descricao_resposta_anamnese == 'sim':
+                table.add(Paragraph(anamnese.descricao_questao_anamnese + " " + 'Sim', font="Helvetica-Bold"))
+            elif item.descricao_resposta_anamnese == 'nao':
+                table.add(Paragraph(anamnese.descricao_questao_anamnese + " " + 'Não', font="Helvetica-Bold"))
             else:
-                table.add(Paragraph(anamnese.descricao_questao_secundaria + " " + item.descricao_resposta_secundaria_anamnese, font="Helvetica-Bold"))
-        else:
-            table.add(Paragraph('-', font="Helvetica-Bold"))
+                table.add(Paragraph(anamnese.descricao_questao_anamnese + " " + item.descricao_resposta_anamnese, font="Helvetica-Bold"))
+
+            if descricao_sec_anamnese_escolhida == 1:
+                #Questão secundária
+                if item.descricao_resposta_secundaria_anamnese == 'sim':
+                    table.add(Paragraph(anamnese.descricao_questao_secundaria + " " + 'Sim', font="Helvetica-Bold"))
+                elif item.descricao_resposta_secundaria_anamnese == 'nao':
+                    table.add(Paragraph(anamnese.descricao_questao_secundaria + " " + 'Não', font="Helvetica-Bold"))
+                else:
+                    table.add(Paragraph(anamnese.descricao_questao_secundaria + " " + item.descricao_resposta_secundaria_anamnese, font="Helvetica-Bold"))
+            else:
+                table.add(Paragraph('-', font="Helvetica-Bold"))
 
     table.set_padding_on_all_cells(Decimal(5), Decimal(5), Decimal(5), Decimal(5))
     table.no_borders()
 
     # Adding Table to PageLayout
     layout.add(table)
+
+    #Inclusão da anamnese não guiada
+
+    anamnese = Anamnese_tipos.objects.filter(id_cliente_fk=id_cliente_fk).filter(nao_guiada=1)
+    anamnese_paciente = Perfil_saude_pacientes.objects.filter(id_paciente=paciente.id).\
+                            filter(id_anamnese_tipo=list(anamnese.values())[0]['id'])
+
+    if len(list(anamnese_paciente.values())) > 0 :
+        table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=2, number_of_columns=1)
+
+        table.add(Paragraph("Anotações: ", font="Helvetica-Bold"))
+        nao_guiada_texto = list(anamnese_paciente.values())[0]['descricao_resposta_anamnese']
+        nao_guiada_texto = nao_guiada_texto.strip()
+        if nao_guiada_texto == '':
+            table.add(Paragraph("Não há anotações.", font="Helvetica-Bold"))
+            # pass
+        else:
+            table.add(Paragraph(nao_guiada_texto, font="Helvetica-Bold"))
+
+    else:
+        table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=1, number_of_columns=1)
+
+        table.add(Paragraph("Anotações: ", font="Helvetica-Bold"))
+        table.add(Paragraph("-", font="Helvetica-Bold", font_size=8))
+
+    table.set_padding_on_all_cells(Decimal(5), Decimal(5), Decimal(5), Decimal(5))
+    table.no_borders()
+
+    # Adding Table to PageLayout
+    layout.add(table)
+
+    # except:
+    #
+    #
+    #     # Configura o total de linhas sendo igual o total de itens da Anamnese
+    #     table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=1, number_of_columns=1)
+    #
+    #     table.add(Paragraph("Anamnese do paciente não realizada.", font="Helvetica-Bold"))
+    #
+    #     table.set_padding_on_all_cells(Decimal(5), Decimal(5), Decimal(5), Decimal(5))
+    #     table.no_borders()
+    #
+    #     # Adding Table to PageLayout
+    #     layout.add(table)
 
 def info_atendimentos_paciente_pdf(layout, paciente, id_cliente_fk):
 
@@ -1508,25 +1667,34 @@ def info_atendimentos_paciente_pdf(layout, paciente, id_cliente_fk):
 def procedimentos(request):
     if request.user.is_active:
         id_cliente_fk = busca_id_cliente(request)
-        procedimentos = Procedimentos_individuais.objects.\
-                        filter(id_cliente_fk=id_cliente_fk)
+        procedimentos_list = carrega_procedimentos(id_cliente_fk)
 
-        procedimento_list = []
-        procedimentos_list = []
-
-        for procedimento in procedimentos:
-            procedimento_list.append(procedimento.id)
-            procedimento_list.append(procedimento.nome_procedimento)
-            procedimento_list.append(procedimento.descricao_procedimento)
-            procedimento_list.append("R$ " + str(procedimento.valor_procedimento).replace(".", ","))
-
-            procedimentos_list.append(procedimento_list)
-            procedimento_list = []
-
-        procedimentos_list = json.dumps(procedimentos_list)
+        error_atendimento = json.dumps(False)
 
         return render(request, 'procedimentos.html',
-                      {'procedimentos': procedimentos_list})
+                      {'procedimentos': procedimentos_list,
+                       'error_atendimento': error_atendimento})
+
+def carrega_procedimentos(id_cliente_fk):
+
+    procedimentos = Procedimentos_individuais.objects. \
+        filter(id_cliente_fk=id_cliente_fk)
+
+    procedimento_list = []
+    procedimentos_list = []
+
+    for procedimento in procedimentos:
+        procedimento_list.append(procedimento.id)
+        procedimento_list.append(procedimento.nome_procedimento)
+        procedimento_list.append(procedimento.descricao_procedimento)
+        procedimento_list.append("R$ " + str(procedimento.valor_procedimento).replace(".", ","))
+
+        procedimentos_list.append(procedimento_list)
+        procedimento_list = []
+
+    procedimentos_list = json.dumps(procedimentos_list)
+
+    return procedimentos_list
 
 @login_required(login_url='login')
 def adicionar_procedimento(request):

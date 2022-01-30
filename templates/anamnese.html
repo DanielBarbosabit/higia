@@ -19,15 +19,19 @@
                        </div>
                    </div>
                </div>
-               <div class="container" style="margin-top:40px">
-                    <a type="button" href="{% url 'configura_anamnese' %}"
-                       class="btn botao_adicionar" title="Configuração">
-<!--                        <div class="editar_adicionar">Configuração</div>-->
-                        <img src="/static/img/configuration_icon.svg"></a>
-
-                </div>
-
-
+               <div class="row">
+                   <div class="container" style="margin-top:40px">
+                        <a type="button" href="{% url 'configura_anamnese' %}"
+                           class="btn botao_adicionar" title="Configuração">
+                            <img src="/static/img/configuration_icon.svg"></a>
+                   </div>
+                   <div class="container" style="margin-top:40px">
+                       <div class="alert alert-danger" role="alert" id="error_atendimento" style="display:None">
+                            Ops! Seu modelo de anamnese não foi criado ainda ou todas as questões dele estão desabilitadas.
+                           Antes de iniciar o atendimento, <b>clique no botão de configuração acima</b> para criar seu modelo.
+                       </div>
+                   </div>
+               </div>
                <div class="row">
                    <div class="col-12">
                        <div class="contact-form-area">
@@ -56,8 +60,6 @@
         </div>
     </div>
 </body>
-
-
     {% include 'partials/_footer_estetica.html' %}
 
     <script src="/static/js/tooplate-scripts.js"></script>
@@ -67,7 +69,7 @@
     <script src="/static/js/js/jquery.dataTables.min.js"></script>
     <script>
         anamneses = {{status_anamneses|safe}};
-
+        error_atendimento = {{error_atendimento|safe}};
     </script>
 
 </html>

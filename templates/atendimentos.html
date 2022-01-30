@@ -19,8 +19,9 @@
                    </div>
                </div>
                <div class="container" style="margin-top:40px">
-                    <a type="button" href="{% url 'novo_atendimento' %}"
-                       class="btn botao_adicionar"><div class="editar_adicionar">Novo atendimento</div></a>
+                    <a type="button" id="novo_atendimento" href="{% url 'novo_atendimento' %}"
+                       class="btn botao_adicionar"><div class="editar_adicionar">Novo atendimento</div>
+                    </a>
                </div>
                <div class="row">
                    <div class="col-12">
@@ -62,6 +63,5 @@
 <script src="/static/js/js/jquery.dataTables.min.js"></script>
 <script>
         atendimentos = {{atendimentos|safe}};
-        console.log(atendimentos);
 </script>
 </html>

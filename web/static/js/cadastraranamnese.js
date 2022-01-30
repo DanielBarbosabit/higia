@@ -3,6 +3,7 @@ $(document).ready(function() {
 
     var tabela = [];
     carrega_dados(tabela);
+    mensagem_atendimentos(error_atendimento);
 
     $('#table_cadastro_usuario').DataTable({
         paging: true,
@@ -53,6 +54,14 @@ function carrega_dados(tabela){
 
         dict_linhas = {};
     });
+}
+
+function mensagem_atendimentos(error_atendimento){
+    if (error_atendimento == true){
+        $("#error_atendimento").show();
+    }else{
+        $("#error_atendimento").hide();
+    }
 }
 
 
