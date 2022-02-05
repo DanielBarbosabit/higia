@@ -25,9 +25,12 @@ from borb.pdf.canvas.layout.text.paragraph import Paragraph
 from borb.pdf.canvas.layout.forms.text_field import TextField
 from borb.pdf.canvas.color.color import HexColor
 from decimal import Decimal
-from borb.pdf.canvas.layout.layout_element import Alignment
-from borb.pdf.canvas.layout.forms.drop_down_list import DropDownList
 
+from borb.pdf.canvas.line_art.line_art_factory import LineArtFactory
+from borb.pdf.canvas.geometry.rectangle import Rectangle
+from borb.pdf.canvas.layout.shape.shape import Shape
+from borb.pdf.page.page_size import PageSize
+import typing
 
 import csv
 # from web.model_forms import Governanca_clientes
@@ -64,7 +67,7 @@ def login(request):
                 if user is not None:
                     print('print 4')
                     auth.login(request, user)
-                    return redirect('dashboard')
+                    return redirect('pacientes')
                 else:
                     messages.error(request, 'Erro de autenticação! Crie uma nova conta')
                     return redirect('/index/')
@@ -126,7 +129,19 @@ def cria_cadastro(request):
         if usuarios_plataforma != len(usuarios):
             carrega_usuarios_governanca_clientes()
 
-        return redirect('index')
+        try:
+            nome = User.objects.filter(email=email).values_list('username', flat=True).get()
+            print('nome: ', nome)
+            print('print 2')
+            user = auth.authenticate(request, username=nome, password=senha)
+
+            if user is not None:
+                print('print 4')
+                auth.login(request, user)
+                return redirect('pacientes')
+
+        except:
+            return redirect('index')
 
 @login_required(login_url='login')
 def dashboard(request):
@@ -455,6 +470,35 @@ def deleta_paciente(request):
         return redirect('pacientes')
     else:
         return redirect('dashboard')
+
+@login_required(login_url='login')
+def deleta_usuario_plataforma(request):
+    if request.user.is_active:
+        id = int(request.GET['id_usuario'].strip('exclui_'))
+        usuario = User.objects.get(id=id)
+        usuario.delete()
+
+        #Aciona rotina de exclusão do usuário de todas as bases
+        usuario = Governanca_clientes.objects.get(id_auth_user=id)
+        id_cliente_fk = usuario.id_cliente_pk
+        usuario.delete()
+
+        pacientes = Pacientes.objects.filter(id_cliente_fk=id_cliente_fk)
+        pacientes.delete()
+
+        perfil_saude = Perfil_saude_pacientes.objects.filter(id_cliente_fk=id_cliente_fk)
+        perfil_saude.delete()
+
+        anamnese_tipos = Anamnese_tipos.objects.filter(id_cliente_fk=id_cliente_fk)
+        anamnese_tipos.delete()
+
+        atendimentos = Fact_atendimentos_procedimentos.objects.filter(id_cliente_fk=id_cliente_fk)
+        atendimentos.delete()
+
+        procedimentos = Procedimentos_individuais.objects.filter(id_cliente_fk=id_cliente_fk)
+        procedimentos.delete()
+
+        return redirect('governanca')
 
 @login_required(login_url='/index/')
 def configura_anamnese(request):
@@ -1289,7 +1333,10 @@ def procedimento_novo_atendimento(request):
 
                 #Definição do ID do atendimento para que seja possível agrupar vários procedimentos
                 #em um único atendimento
-                id_atendimento = data_criacao + "_" + str(id_cliente_fk) + "_" + str(id_paciente)
+                data_atend = inicio_atendimento.split(' ')[0]
+                data_atend = data_atend.split('/')[2] + data_atend.split('/')[1] + data_atend.split('/')[0]
+
+                id_atendimento = data_atend + "_" + data_criacao + "_" + str(id_cliente_fk) + "_" + str(id_paciente)
 
                #Carrega os procedimentos do usuário da plataforma
                 procedimentos = Procedimentos_individuais.objects.filter(id_cliente_fk=id_cliente_fk)
@@ -1392,6 +1439,7 @@ def seleciona_mes_relatorioporpaciente(request):
 def exporta_relatorio(paciente, id_cliente_fk):
     pdf, page, layout = cria_pdf()
     info_pessoal_paciente_pdf(layout, paciente)
+
     info_anamnese_paciente_pdf(layout,paciente, id_cliente_fk)
     pdf, page2, layout2 = cria_pdf(append_new_page=True,
              pdf_object=pdf)
@@ -1441,6 +1489,7 @@ def cria_pdf(append_new_page=False,  pdf_object=None):
         layout: PageLayout = SingleColumnLayout(page)
 
         return pdf, page, layout
+
     else:
         # Create empty Page
         page = Page()
@@ -1451,66 +1500,103 @@ def cria_pdf(append_new_page=False,  pdf_object=None):
         # Create PageLayout
         layout: PageLayout = SingleColumnLayout(page)
 
+        ps: typing.Tuple[Decimal, Decimal] = PageSize.A4_PORTRAIT.value
+
+        # Line
+        r: Rectangle = Rectangle(Decimal(50), Decimal(40), Decimal(200), Decimal(1))
+        Shape(
+            points=LineArtFactory.rectangle(r),
+            stroke_color=HexColor("000000"),
+            fill_color=HexColor("000000"),
+        ).layout(page, r)
+
+        p: Paragraph = Paragraph('Assinatura do responsável', font="Helvetica-Bold", font_size=7)
+
+        # the next line of code uses absolute positioning
+        r: Rectangle = Rectangle(Decimal(50),  # x: 0 + page_margin
+                                 Decimal(30),  # y: page_height - page_margin - height_of_textbox
+                                 Decimal(200),  # width: page_width - 2 * page_margin
+                                 Decimal(1))  # height
+        p.layout(page, r)
+
+        r: Rectangle = Rectangle(Decimal(350), Decimal(40), Decimal(200), Decimal(1))
+        Shape(
+            points=LineArtFactory.rectangle(r),
+            stroke_color=HexColor("000000"),
+            fill_color=HexColor("000000"),
+        ).layout(page, r)
+
+        p: Paragraph = Paragraph('Assinatura do paciente', font="Helvetica-Bold", font_size=7)
+
+        # the next line of code uses absolute positioning
+        r: Rectangle = Rectangle(Decimal(350),  # x: 0 + page_margin
+                                 Decimal(30),  # y: page_height - page_margin - height_of_textbox
+                                 Decimal(200),  # width: page_width - 2 * page_margin
+                                 Decimal(1))  # height
+        p.layout(page, r)
+
         return pdf_object, page, layout
 
 def info_pessoal_paciente_pdf(layout, paciente):
     # Let's start by adding a heading
-    layout.add(Paragraph("Informações do paciente:", font="Helvetica-Bold"))
+    layout.add(Paragraph("Informações do paciente", font="Helvetica-Bold", font_size=13))
+    layout.add(Paragraph("________________________________________________________________________",
+                         font="Helvetica-Bold", font_size=9))
 
     # Use a table to lay out the form
     table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=7, number_of_columns=2)
-
+    font_size = 10
     # Nome
-    table.add(Paragraph("Nome : " + paciente.nome, font="Helvetica-Bold"))
-    table.add(Paragraph("RG : " + paciente.rg, font="Helvetica-Bold"))
+    table.add(Paragraph("Nome: " + paciente.nome, font="Helvetica-Bold", font_size=font_size))
+    table.add(Paragraph("RG: " + paciente.rg, font="Helvetica-Bold", font_size=font_size))
     if paciente.cpf is None:
-        table.add(Paragraph("CPF : " + 'Não informado', font="Helvetica-Bold"))
+        table.add(Paragraph("CPF: " + ' ', font="Helvetica-Bold", font_size=font_size))
     else:
-        table.add(Paragraph("CPF : " + paciente.cpf, font="Helvetica-Bold"))
+        table.add(Paragraph("CPF: " + paciente.cpf, font="Helvetica-Bold", font_size=font_size))
     if paciente.profissao is None:
-        table.add(Paragraph("Profissão : " + 'Não informada', font="Helvetica-Bold"))
+        table.add(Paragraph("Profissão: " + ' ', font="Helvetica-Bold", font_size=font_size))
     else:
-        table.add(Paragraph("Profissão : " + paciente.profissao, font="Helvetica-Bold"))
+        table.add(Paragraph("Profissão: " + paciente.profissao, font="Helvetica-Bold", font_size=font_size))
     if paciente.data_nascimento is None:
-        table.add(Paragraph("Data de Nascimento : " + 'Não informada', font="Helvetica-Bold"))
+        table.add(Paragraph("Data de Nascimento: " + ' ', font="Helvetica-Bold", font_size=font_size))
     else:
-        table.add(Paragraph("Data de Nascimento : " + paciente.data_nascimento, font="Helvetica-Bold"))
+        table.add(Paragraph("Data de Nascimento: " + paciente.data_nascimento, font="Helvetica-Bold", font_size=font_size))
     if paciente.sexo == 'masculino':
-        table.add(Paragraph("Sexo : " + 'Masculino', font="Helvetica-Bold"))
+        table.add(Paragraph("Sexo : " + 'Masculino', font="Helvetica-Bold", font_size=font_size))
     else:
-        table.add(Paragraph("Sexo : " + 'Feminino', font="Helvetica-Bold"))
+        table.add(Paragraph("Sexo: " + 'Feminino', font="Helvetica-Bold", font_size=font_size))
     if paciente.email is None:
-        table.add(Paragraph("Email : " + 'Não informado', font="Helvetica-Bold"))
+        table.add(Paragraph("Email: " + ' ', font="Helvetica-Bold", font_size=font_size))
     else:
-        table.add(Paragraph("Email : " + paciente.email, font="Helvetica-Bold"))
+        table.add(Paragraph("Email: " + paciente.email, font="Helvetica-Bold", font_size=font_size))
     if paciente.contato_1 is None:
-        table.add(Paragraph("Contato 1 : " + 'Não informado', font="Helvetica-Bold"))
+        table.add(Paragraph("Contato 1: " + ' ', font="Helvetica-Bold", font_size=font_size))
     else:
-        table.add(Paragraph("Contato 1 : " + paciente.contato_1, font="Helvetica-Bold"))
+        table.add(Paragraph("Contato 1: " + paciente.contato_1, font="Helvetica-Bold", font_size=font_size))
     if paciente.contato_2 is None:
-        table.add(Paragraph("Contato 2 : " + 'Não informado', font="Helvetica-Bold"))
+        table.add(Paragraph("Contato 2: " + ' ', font="Helvetica-Bold", font_size=font_size))
     else:
-        table.add(Paragraph("Contato 2 : " + paciente.contato_2, font="Helvetica-Bold"))
+        table.add(Paragraph("Contato 2: " + paciente.contato_2, font="Helvetica-Bold", font_size=font_size))
     if paciente.endereco is None:
-        table.add(Paragraph("Endereço : " + 'Não informado', font="Helvetica-Bold"))
+        table.add(Paragraph("Endereço: " + ' ', font="Helvetica-Bold", font_size=font_size))
     else:
-        table.add(Paragraph("Endereço : " + paciente.endereco, font="Helvetica-Bold"))
+        table.add(Paragraph("Endereço: " + paciente.endereco, font="Helvetica-Bold", font_size=font_size))
     if paciente.numero_endereco is None:
-        table.add(Paragraph("Número : " + 'Não informado', font="Helvetica-Bold"))
+        table.add(Paragraph("Número: " + ' ', font="Helvetica-Bold", font_size=font_size))
     else:
-        table.add(Paragraph("Número : " + str(paciente.numero_endereco), font="Helvetica-Bold"))
+        table.add(Paragraph("Número: " + str(paciente.numero_endereco), font="Helvetica-Bold", font_size=font_size))
     if paciente.cidade is None:
-        table.add(Paragraph("Município : " + 'Não informado', font="Helvetica-Bold"))
+        table.add(Paragraph("Município: " + ' ', font="Helvetica-Bold", font_size=font_size))
     else:
-        table.add(Paragraph("Município : " + paciente.cidade, font="Helvetica-Bold"))
+        table.add(Paragraph("Município: " + paciente.cidade, font="Helvetica-Bold", font_size=font_size))
     if paciente.estado is None:
-        table.add(Paragraph("Estado : " + 'Não informado', font="Helvetica-Bold"))
+        table.add(Paragraph("Estado: " + ' ', font="Helvetica-Bold", font_size=font_size))
     else:
-        table.add(Paragraph("Estado : " + paciente.estado, font="Helvetica-Bold"))
+        table.add(Paragraph("Estado: " + paciente.estado, font="Helvetica-Bold", font_size=font_size))
     if paciente.cep is None:
-        table.add(Paragraph("CEP : " + 'Não informado', font="Helvetica-Bold"))
+        table.add(Paragraph("CEP: " + ' ', font="Helvetica-Bold", font_size=font_size))
     else:
-        table.add(Paragraph("CEP : " + paciente.cep, font="Helvetica-Bold"))
+        table.add(Paragraph("CEP: " + paciente.cep, font="Helvetica-Bold", font_size=font_size))
 
     table.set_padding_on_all_cells(Decimal(5), Decimal(5), Decimal(5), Decimal(5))
     table.no_borders()
@@ -1521,116 +1607,134 @@ def info_pessoal_paciente_pdf(layout, paciente):
 def info_anamnese_paciente_pdf(layout, paciente, id_cliente_fk):
 
     # Let's start by adding a heading
-    layout.add(Paragraph("Anamnese:", font="Helvetica-Bold"))
+    layout.add(Paragraph("Anamnese", font="Helvetica-Bold", font_size=13))
+    layout.add(Paragraph("________________________________________________________________________",
+                         font="Helvetica-Bold", font_size=9))
+    font_size = 10
 
-    # try:
-    anamnese_paciente = Perfil_saude_pacientes.objects.filter(id_paciente=paciente.id)
-    total_itens = len(anamnese_paciente)
+    try:
+        #Verifica os itens de anamnese ativos para o usuário
+        query = connection.cursor()
+        query_str = """
+                SELECT 
+                    id 
+                FROM
+                    web_anamnese_tipos
+                where
+                    status_anamnese = 1
+                    and
+                    id_cliente_fk = {};
+         """.format(id_cliente_fk)
+        query.execute(query_str)
+        ids_anamneses = [i[0] for i in query.fetchall()]
+        query.close()
 
-    #Verifica se a não guiada está ativa para o usuário para descontar uma linha da tabela
-    qtde_nao_guiada = list(Anamnese_tipos.objects.filter(id_cliente_fk=id_cliente_fk).filter(nao_guiada=1).values())
 
-    if len(qtde_nao_guiada) > 0:
-        # Configura o total de linhas sendo igual o total de itens da Anamnese
-        if total_itens > 0:
-            table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=total_itens-1, number_of_columns=2)
-        else:
-            layout.add(Paragraph("Anamnese não realizada.", font="Helvetica-Bold"))
-            return
-    else:
-        if total_itens > 0:
-            table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=total_itens, number_of_columns=2)
-        else:
-            layout.add(Paragraph("Anamnese não realizada.", font="Helvetica-Bold"))
-            return
+        anamnese_paciente = Perfil_saude_pacientes.objects.filter(id_paciente=paciente.id).\
+                                        filter(id_anamnese_tipo__in=ids_anamneses)
+        total_itens = len(anamnese_paciente)
 
-    # Coleta os nomes mais atuais das perguntas da Anamnese através do ID
-    for item in anamnese_paciente:
-        anamnese = Anamnese_tipos.objects.filter(id_cliente_fk=id_cliente_fk).get(id=item.id_anamnese_tipo)
-        descricao_sec_anamnese_escolhida = anamnese.habilita_pergunta_secundaria
-        nao_guiada = anamnese.nao_guiada
+        #Verifica se a não guiada está ativa para o usuário para descontar uma linha da tabela
+        qtde_nao_guiada = list(Anamnese_tipos.objects.filter(id_cliente_fk=id_cliente_fk).filter(nao_guiada=1).values())
 
-        if not nao_guiada:
-            #Questão primária
-            if item.descricao_resposta_anamnese == 'sim':
-                table.add(Paragraph(anamnese.descricao_questao_anamnese + " " + 'Sim', font="Helvetica-Bold"))
-            elif item.descricao_resposta_anamnese == 'nao':
-                table.add(Paragraph(anamnese.descricao_questao_anamnese + " " + 'Não', font="Helvetica-Bold"))
+        if len(qtde_nao_guiada) > 0:
+            # Configura o total de linhas sendo igual o total de itens da Anamnese
+            if total_itens > 0:
+                table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=total_itens-1, number_of_columns=2)
             else:
-                table.add(Paragraph(anamnese.descricao_questao_anamnese + " " + item.descricao_resposta_anamnese, font="Helvetica-Bold"))
+                layout.add(Paragraph("Anamnese não realizada.", font="Helvetica-Bold", font_size=font_size))
+                return
+        else:
+            if total_itens > 0:
+                table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=total_itens, number_of_columns=2)
+            else:
+                layout.add(Paragraph("Anamnese não realizada.", font="Helvetica-Bold", font_size=font_size))
+                return
 
-            if descricao_sec_anamnese_escolhida == 1:
-                #Questão secundária
-                if item.descricao_resposta_secundaria_anamnese == 'sim':
-                    table.add(Paragraph(anamnese.descricao_questao_secundaria + " " + 'Sim', font="Helvetica-Bold"))
-                elif item.descricao_resposta_secundaria_anamnese == 'nao':
-                    table.add(Paragraph(anamnese.descricao_questao_secundaria + " " + 'Não', font="Helvetica-Bold"))
+        # Coleta os nomes mais atuais das perguntas da Anamnese através do ID
+        for item in anamnese_paciente:
+            anamnese = Anamnese_tipos.objects.filter(id_cliente_fk=id_cliente_fk).get(id=item.id_anamnese_tipo)
+            descricao_sec_anamnese_escolhida = anamnese.habilita_pergunta_secundaria
+            nao_guiada = anamnese.nao_guiada
+
+            if not nao_guiada:
+                #Questão primária
+                if item.descricao_resposta_anamnese == 'sim':
+                    table.add(Paragraph(anamnese.descricao_questao_anamnese + " " + 'Sim', font="Helvetica-Bold", font_size=font_size))
+                elif item.descricao_resposta_anamnese == 'nao':
+                    table.add(Paragraph(anamnese.descricao_questao_anamnese + " " + 'Não', font="Helvetica-Bold", font_size=font_size))
                 else:
-                    table.add(Paragraph(anamnese.descricao_questao_secundaria + " " + item.descricao_resposta_secundaria_anamnese, font="Helvetica-Bold"))
-            else:
-                table.add(Paragraph('-', font="Helvetica-Bold"))
+                    table.add(Paragraph(anamnese.descricao_questao_anamnese + " " + item.descricao_resposta_anamnese,
+                                        font="Helvetica-Bold", font_size=font_size))
 
-    table.set_padding_on_all_cells(Decimal(5), Decimal(5), Decimal(5), Decimal(5))
-    table.no_borders()
+                if descricao_sec_anamnese_escolhida == 1:
+                    #Questão secundária
+                    if item.descricao_resposta_secundaria_anamnese == 'sim':
+                        table.add(Paragraph(anamnese.descricao_questao_secundaria + " " + 'Sim', font="Helvetica-Bold", font_size=font_size))
+                    elif item.descricao_resposta_secundaria_anamnese == 'nao':
+                        table.add(Paragraph(anamnese.descricao_questao_secundaria + " " + 'Não', font="Helvetica-Bold", font_size=font_size))
+                    else:
+                        table.add(Paragraph(anamnese.descricao_questao_secundaria + " " + item.descricao_resposta_secundaria_anamnese,
+                                            font="Helvetica-Bold", font_size=font_size))
+                else:
+                    table.add(Paragraph(' ', font="Helvetica-Bold", font_size=font_size))
 
-    # Adding Table to PageLayout
-    layout.add(table)
+        table.set_padding_on_all_cells(Decimal(5), Decimal(5), Decimal(5), Decimal(5))
+        table.no_borders()
 
-    #Inclusão da anamnese não guiada
+        # Adding Table to PageLayout
+        layout.add(table)
 
-    anamnese = Anamnese_tipos.objects.filter(id_cliente_fk=id_cliente_fk).filter(nao_guiada=1)
-    anamnese_paciente = Perfil_saude_pacientes.objects.filter(id_paciente=paciente.id).\
-                            filter(id_anamnese_tipo=list(anamnese.values())[0]['id'])
+        #Inclusão da anamnese não guiada
 
-    if len(list(anamnese_paciente.values())) > 0 :
-        table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=2, number_of_columns=1)
+        anamnese = Anamnese_tipos.objects.filter(id_cliente_fk=id_cliente_fk).filter(nao_guiada=1)
+        habilita_observacoes_gerais = True
 
-        table.add(Paragraph("Anotações: ", font="Helvetica-Bold"))
-        nao_guiada_texto = list(anamnese_paciente.values())[0]['descricao_resposta_anamnese']
-        nao_guiada_texto = nao_guiada_texto.strip()
-        if nao_guiada_texto == '':
-            table.add(Paragraph("Não há anotações.", font="Helvetica-Bold"))
-            # pass
+        if len(list(anamnese.values())) > 0:
+            anamnese_paciente = Perfil_saude_pacientes.objects.filter(id_paciente=paciente.id).\
+                                    filter(id_anamnese_tipo=list(anamnese.values())[0]['id'])
         else:
-            table.add(Paragraph(nao_guiada_texto, font="Helvetica-Bold"))
+            habilita_observacoes_gerais = False
 
-    else:
-        table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=1, number_of_columns=1)
+        if len(list(anamnese_paciente.values())) > 0 and habilita_observacoes_gerais:
+            table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=2, number_of_columns=1)
 
-        table.add(Paragraph("Anotações: ", font="Helvetica-Bold"))
-        table.add(Paragraph("-", font="Helvetica-Bold", font_size=8))
+            table.add(Paragraph("Observações gerais: ", font="Helvetica-Bold", font_size=font_size))
+            nao_guiada_texto = list(anamnese_paciente.values())[0]['descricao_resposta_anamnese']
+            nao_guiada_texto = nao_guiada_texto.strip()
+            if nao_guiada_texto == '':
+                table.add(Paragraph("Não há observações.", font="Helvetica-Bold", font_size=font_size))
+                # pass
+            else:
+                table.add(Paragraph(nao_guiada_texto, font="Helvetica-Bold", font_size=font_size))
 
-    table.set_padding_on_all_cells(Decimal(5), Decimal(5), Decimal(5), Decimal(5))
-    table.no_borders()
+        else:
+            table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=2, number_of_columns=1)
 
-    # Adding Table to PageLayout
-    layout.add(table)
+            table.add(Paragraph("Observações gerais: ", font="Helvetica-Bold", font_size=font_size))
+            table.add(Paragraph("-", font="Helvetica-Bold", font_size=font_size))
 
-    # except:
-    #
-    #
-    #     # Configura o total de linhas sendo igual o total de itens da Anamnese
-    #     table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=1, number_of_columns=1)
-    #
-    #     table.add(Paragraph("Anamnese do paciente não realizada.", font="Helvetica-Bold"))
-    #
-    #     table.set_padding_on_all_cells(Decimal(5), Decimal(5), Decimal(5), Decimal(5))
-    #     table.no_borders()
-    #
-    #     # Adding Table to PageLayout
-    #     layout.add(table)
+        table.set_padding_on_all_cells(Decimal(5), Decimal(5), Decimal(5), Decimal(5))
+        table.no_borders()
+
+        # Adding Table to PageLayout
+        layout.add(table)
+
+    except:
+        print('Falha de geração da seção de anamnse do PDF')
 
 def info_atendimentos_paciente_pdf(layout, paciente, id_cliente_fk):
 
     # Let's start by adding a heading
-    layout.add(Paragraph("Atendimentos:", font="Helvetica-Bold"))
+    layout.add(Paragraph("Atendimentos:", font="Helvetica-Bold", font_size=9))
 
-    atendimentos = Fact_atendimentos_procedimentos.objects.filter(id_paciente=paciente.id).filter(id_cliente_fk=id_cliente_fk)
+    atendimentos = Fact_atendimentos_procedimentos.objects.filter(id_paciente=paciente.id).\
+                                        filter(id_cliente_fk=id_cliente_fk).order_by('-id_atendimento')
     qtde_atendimentos = len(atendimentos)
 
     # Configura o total de linhas sendo igual o total de itens da Anamnese
     table: FixedColumnWidthTable = FixedColumnWidthTable(number_of_rows=qtde_atendimentos+1, number_of_columns=6,
-                                                         column_widths=[4,5,2,2,3,5])
+                                                         column_widths=[3,3,1,2,3,7])
     font_size = 7
     table.add(Paragraph('Início-Término', font="Helvetica-Bold", font_size=font_size))
     table.add(Paragraph('Procedimento', font="Helvetica-Bold", font_size=font_size))

@@ -15,7 +15,7 @@
                            class="btn botao_adicionar"><div class="editar_adicionar">Adicionar item</div>
                         </a>
                         <a type="button" href="{% url 'habilitar_nao_guiada' %}"
-                           class="btn botao_adicionar"><div class="editar_adicionar">Não guiada</div>
+                           class="btn botao_adicionar"><div class="editar_adicionar">Obs. gerais</div>
                         </a>
                     </div>
                </div>
@@ -137,7 +137,7 @@
                                     {% if nao_guiada.nao_guiada == True %}
                                       <div class="row" style="margin-top:1em; margin-left:10px; margin-right:10px">
                                           <label for="anamnese_nao_guiada">
-                                                       <b>Anotações: </b>
+                                                       <b>Observações gerais: </b>
                                           </label>
                                            <textarea class="form-control"class="form-control"
                                                      id="anamnese_nao_guiada" rows="8" maxlength="2500" name="anamnese_nao_guiada"></textarea>

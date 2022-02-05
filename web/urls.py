@@ -32,6 +32,7 @@ urlpatterns = [
     path('editar_procedimento/', views.editar_procedimento, name='editar_procedimento'),
     path('deleta_procedimento/', views.deleta_procedimento, name='deleta_procedimento'),
     path('governanca', views.governanca, name='governanca'),
+    path('deleta_usuario_plataforma/', views.deleta_usuario_plataforma, name='deleta_usuario_plataforma'),
     path(r'index/', views.index, name='index'),
     path('login', views.login, name='login'),
     path('cadastro/', views.cadastro, name='cadastro'),

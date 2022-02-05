@@ -12,7 +12,7 @@
                <div class="row">
                    <div class="col-12">
                        <div class="section-heading">
-                           <h3>PROCEDIMENTOS</h3>
+                           <h3>NOVO PROCEDIMENTO</h3>
                        </div>
                    </div>
                </div>
@@ -23,9 +23,11 @@
                                 {% csrf_token %}
                                <div class="row" style="margin-top:1em">
                                    <div class="col-12 col-lg-12">
-                                       <label for="nome_procedimento"><b>Procedimento</b></label>
+                                       <label for="nome_procedimento">
+                                           <b>Procedimento</b>
+                                       </label>
                                        <input type="text" id="nome_procedimento" class="form-control"
-                                              name="nome_procedimento" placeholder="Ex: Curativo dorsal." required>
+                                      name="nome_procedimento" placeholder="Inclua nesse campo um dos procedimentos que executa. Por exemplo, fisioterapita cervical." required>
                                    </div>
                                </div>
                                <div class="row" style="margin-top:1em">
@@ -33,7 +35,7 @@
                                        <label for="descricao_procedimento"><b>Descrição do procedimento</b></label>
                                        <input type="text" id="descricao_procedimento" class="form-control"
                                         name="descricao_procedimento"
-                                        placeholder="Ex: Sessão de atendimento terapêutico." required>
+                                        placeholder="Inclua aqui uma breve descrição do seu procedimento. Por exemplo, atendimento fisioterapêutico" required>
                                    </div>
                                </div>
                                 <div class="row" style="margin-top:1em">
