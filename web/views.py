@@ -1554,7 +1554,10 @@ def info_pessoal_paciente_pdf(layout, paciente):
     font_size = 10
     # Nome
     table.add(Paragraph("Nome: " + paciente.nome, font="Helvetica-Bold", font_size=font_size))
-    table.add(Paragraph("RG: " + paciente.rg, font="Helvetica-Bold", font_size=font_size))
+    if paciente.rg is None:
+        table.add(Paragraph("RG: " + ' ', font="Helvetica-Bold", font_size=font_size))
+    else:
+        table.add(Paragraph("RG: " + paciente.rg, font="Helvetica-Bold", font_size=font_size))
     if paciente.cpf is None:
         table.add(Paragraph("CPF: " + ' ', font="Helvetica-Bold", font_size=font_size))
     else:
