@@ -226,6 +226,8 @@ def adicionar_paciente(request):
                     campo_duplicado.append('RG')
                 elif cpf == paciente['cpf']:
                     campo_duplicado.append('CPF')
+                elif contato_1 == paciente['contato_1']:
+                    campo_duplicado.append('Contato 1')
 
                 if len(campo_duplicado) > 0:
                     paciente_list = []
@@ -343,6 +345,8 @@ def editar_paciente(request):
                     campo_duplicado.append('RG')
                 elif (cpf == paciente['cpf']) and (id_paciente_editado != str(paciente['id'])):
                     campo_duplicado.append('CPF')
+                elif (contato_1 == paciente['contato_1']) and (id_paciente_editado != str(paciente['id'])) :
+                    campo_duplicado.append('Contato 1')
 
                 if len(campo_duplicado) > 0:
                     paciente_list = []
@@ -993,7 +997,9 @@ def carrega_dados_anamnese(id_cliente_fk):
         for id_paciente in lista_ids_pacientes:
             dict_status_anamneses['id_paciente'] = id_paciente
             nome = pacientes.filter(id=int(id_paciente)).values('nome')[0]
+            contato_1 = pacientes.filter(id=int(id_paciente)).values('contato_1')[0]
             dict_status_anamneses['nome'] = nome['nome']
+            dict_status_anamneses['contato_1'] = contato_1['contato_1']
             for registro in anamneses_pacientes:
                 id_paciente_tabela_anamnese = registro[1]
                 if id_paciente_tabela_anamnese == id_paciente:
@@ -1621,9 +1627,9 @@ def info_anamnese_paciente_pdf(layout, paciente, id_cliente_fk):
                 FROM
                     web_anamnese_tipos
                 where
-                    status_anamnese = 1
+                    status_anamnese = True
                     and
-                    id_cliente_fk = {};
+                    id_cliente_fk = '{}';
          """.format(id_cliente_fk)
         query.execute(query_str)
         ids_anamneses = [i[0] for i in query.fetchall()]
@@ -1720,7 +1726,8 @@ def info_anamnese_paciente_pdf(layout, paciente, id_cliente_fk):
         # Adding Table to PageLayout
         layout.add(table)
 
-    except:
+    except Exception as e:
+        print(e)
         print('Falha de geração da seção de anamnse do PDF')
 
 def info_atendimentos_paciente_pdf(layout, paciente, id_cliente_fk):
@@ -1741,7 +1748,7 @@ def info_atendimentos_paciente_pdf(layout, paciente, id_cliente_fk):
     table.add(Paragraph('Qtde', font="Helvetica-Bold", font_size=font_size))
     table.add(Paragraph('Valor', font="Helvetica-Bold", font_size=font_size))
     table.add(Paragraph('Pag. efetuado', font="Helvetica-Bold", font_size=font_size))
-    table.add(Paragraph('Observações', font="Helvetica-Bold", font_size=font_size))
+    table.add(Paragraph('Obs. do atendimento/ Evolução do paciente', font="Helvetica-Bold", font_size=font_size))
 
     for i in atendimentos:
         valor = round(int(i.qtde_procedimento) * i.valor_procedimento, 2)

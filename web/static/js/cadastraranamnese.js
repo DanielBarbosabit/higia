@@ -14,6 +14,7 @@ $(document).ready(function() {
         },
         "columns": [
             {"data": "Paciente"},
+            {"data": "Contato 1"},
             {"data": "Status"},
             {"data": "Ação"}
         ],
@@ -29,7 +30,7 @@ function carrega_dados(tabela){
     Object.keys(anamneses).forEach(k =>{
 
         dict_linhas['Paciente'] =  anamneses[k]['nome'];
-//        dict_linhas['Status'] = usuarios[k]['status_anamnese'];
+        dict_linhas['Contato 1'] = anamneses[k]['contato_1']
         if (anamneses[k]['status_anamnese'] == 'completo'){
             dict_linhas['Status'] = '<div><img title="Finalizada" src="/static/img/ok_icon.svg">'+
             '<p hidden>Finalizada</p></div>';
